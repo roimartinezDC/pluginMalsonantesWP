@@ -6,6 +6,7 @@
  * Author:            Roi Martínez
  */
 
+
 function crearTablas() {
     global $wpdb;
     $charset_collate = $wpdb->get_charset_collate();
@@ -14,13 +15,13 @@ function crearTablas() {
     $table_name2 = $wpdb->prefix . 'palabras_reemplazo';
 
     $sql = "CREATE TABLE $table_name1 (
-        id mediumint(9) NOT NULL AUTO_INCREMENT,
+        id mediumint(9) NOT NULL,
         text text NOT NULL,
         PRIMARY KEY (id)
     ) $charset_collate;";
 
     $sql2 = "CREATE TABLE $table_name2 (
-        id mediumint(9) NOT NULL AUTO_INCREMENT,
+        id mediumint(9) NOT NULL,
         text text NOT NULL,
         PRIMARY KEY (id)
     ) $charset_collate;";
@@ -32,23 +33,22 @@ function crearTablas() {
 add_action('plugins_loaded', 'crearTablas');
 
 
-
 function insertValoresTablas() {
     global $wpdb;
     $table_name1 = $wpdb->prefix . 'palabras_malsonantes';
     $table_name2 = $wpdb->prefix . 'palabras_reemplazo';
 
-    $sql11 = "INSERT INTO $table_name1 (text) VALUES ('pailán')";
-    $sql12 = "INSERT INTO $table_name1 (text) VALUES ('imbécil')";
-    $sql13 = "INSERT INTO $table_name1 (text) VALUES ('cabrón')";
-    $sql14 = "INSERT INTO $table_name1 (text) VALUES ('gilipollas')";
-    $sql15 = "INSERT INTO $table_name1 (text) VALUES ('hijo de puta')";
+    $sql11 = "INSERT INTO $table_name1 (id, text) VALUES (1, 'pailán')";
+    $sql12 = "INSERT INTO $table_name1 (id, text) VALUES (2, 'imbécil')";
+    $sql13 = "INSERT INTO $table_name1 (id, text) VALUES (3, 'cabrón')";
+    $sql14 = "INSERT INTO $table_name1 (id, text) VALUES (4, 'gilipollas')";
+    $sql15 = "INSERT INTO $table_name1 (id, text) VALUES (5, 'hijo de puta')";
 
-    $sql21 = "INSERT INTO $table_name2 (text) VALUES ('guapo')";
-    $sql22 = "INSERT INTO $table_name2 (text) VALUES ('genio')";
-    $sql23 = "INSERT INTO $table_name2 (text) VALUES ('cabrón')";
-    $sql24 = "INSERT INTO $table_name2 (text) VALUES ('precioso')";
-    $sql25 = "INSERT INTO $table_name2 (text) VALUES ('hermosa persona')";
+    $sql21 = "INSERT INTO $table_name2 (id, text) VALUES (1, 'guapo')";
+    $sql22 = "INSERT INTO $table_name2 (id, text) VALUES (2, 'genio')";
+    $sql23 = "INSERT INTO $table_name2 (id, text) VALUES (3, 'cabrón')";
+    $sql24 = "INSERT INTO $table_name2 (id, text) VALUES (4, 'precioso')";
+    $sql25 = "INSERT INTO $table_name2 (id, text) VALUES (5, 'hermosa persona')";
 
     require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
     dbDelta( $sql11);
@@ -66,8 +66,14 @@ function insertValoresTablas() {
 add_action('plugins_loaded', 'insertValoresTablas');
 
 
-function renym_wordpress_typo_fix( $text ) {
-    return str_replace( array("pailán", "imbécil", "cabrón", "gilipollas", "hijo de puta"), '*******', $text );
-}
+function reescribir_malsonantes( $text ) {
+    global $wpdb;
+    $table_malsonantes = $wpdb->prefix . 'palabras_malsonantes';
+    $table_reemplazo = $wpdb->prefix . 'palabras_malsonantes';
 
-add_filter( 'the_content', 'renym_wordpress_typo_fix' );
+    $malsonantes = dbDelta("SELECT text FROM $table_malsonantes");
+    $reemplazos = dbDelta("SELECT text FROM $table_reemplazo");
+
+    return str_replace( array("imbécil", "cabrón"), "$malsonantes[1]", $text );
+}
+add_filter( 'the_content', 'reescribir_malsonantes' );
