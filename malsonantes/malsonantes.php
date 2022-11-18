@@ -69,11 +69,21 @@ add_action('plugins_loaded', 'insertValoresTablas');
 function reescribir_malsonantes( $text ) {
     global $wpdb;
     $table_malsonantes = $wpdb->prefix . 'palabras_malsonantes';
-    $table_reemplazo = $wpdb->prefix . 'palabras_malsonantes';
+    $table_reemplazo = $wpdb->prefix . 'palabras_reemplazo';
 
-    $malsonantes = dbDelta("SELECT text FROM $table_malsonantes");
-    $reemplazos = dbDelta("SELECT text FROM $table_reemplazo");
+    $queryMalsonantes = $wpdb->get_results( "SELECT text FROM $table_malsonantes");
+    $queryReemplazos = $wpdb->get_results("SELECT text FROM $table_reemplazo");
 
-    return str_replace( array("imbécil", "cabrón"), "$malsonantes[1]", $text );
+    $malsonantes = array();
+    for ($i = 0; $i < sizeof($queryMalsonantes); $i++) {
+        $malsonantes[] = $queryMalsonantes[$i]->text;
+    }
+
+    $reemplazos = array();
+    for ($i = 0; $i < sizeof($queryReemplazos); $i++) {
+        $reemplazos[] = $queryReemplazos[$i]->text;
+    }
+
+    return str_replace( $malsonantes, $reemplazos, $text);
 }
-add_filter( 'the_content', 'reescribir_malsonantes' );
+add_filter('the_content', 'reescribir_malsonantes');
